@@ -9,17 +9,19 @@ For questions or comments, please reach out to xhq@stanford.edu.
 
 ## Cancer model
 - Contains scripts for analyzing Cas12a Ultra-seq data in three different tumor models:
-  - Oncogene-negative tumors**
-*   *Oncogene-negative tumors
-* PE150 folder contains codes necessary for PE150 data (using SCLC as an example)
-* PE300 folder contains codes necessary for PE300 data
+  - Oncogene-negative tumors
+  - Pancreatic ductal adenocarcinoma (PDAC)
+  - Small cell lung cancer (SCLC)
+
+- PE150 folder: Scripts for PE150 sequencing data (using SCLC as an example).
+- PE300 folder: Scripts for PE300 sequencing data.
 
 ## Cas12a_Efficiency 
-* Codes for analyzing Cas12a Ultra-seq data for the efficiency experiment.
+- Includes scripts for analyzing Cas12a Ultra-seq data from efficiency experiments.
 
 ## Triple_Knockout 
-* Codes for analyzing Cas12a Ultra-seq data for the triple tumor suppressor knockout experiment.
+- Includes scripts for analyzing Cas12a Ultra-seq data from the triple tumor suppressor knockout experiment.
 
 ## Figure_Plot
-* Codes for generating all the figures related Cas12a Ultra-seq experiment.
+- Scripts for generating all Cas12a Ultra-seq experiment-related figures.
 
