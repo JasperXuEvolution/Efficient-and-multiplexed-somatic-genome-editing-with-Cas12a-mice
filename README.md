@@ -7,23 +7,17 @@ Somatic genome editing in mouse models has increased our understanding of the in
 ## Contact
 If you have any questions or comments, you could reach me at xhq@stanford.edu.
 
-## 01_Cancer model
-* Codes for analyzing Ultra-seq data for Oncogene negative tumor, PDAC and SCLC
+## Cancer model
+* Codes for analyzing Cas12a Ultra-seq data for Oncogene negative tumor, PDAC and SCLC
 * PE150 folder contains codes necessary for PE150 data (using SCLC as an example)
-* PE300 folder contains codes necessary for PE150 data
+* PE300 folder contains codes necessary for PE300 data
 
-## 02_
-* Refer to the folder S2_QC_and_Preprocessing
-* Map clustered sgRNA to the reference.
-* Filter out barcode that does not match the clonal barcode pattern
-* QC of the data
-* An example of reference experimental setup and sgRNA information is in folder Data/Chromatin_58Q
-* For detailed steps of QC, please refer to the jupyter notebooks.
+## Cas12a_Efficiency 
+* Codes for analyzing Cas12a Ultra-seq data for the efficiency experiment.
 
-## 3. Bootstrapping and analysis
-* Refer to the folder S3_Bootstrapping_and_Analysis
-* We used a two-step boostrapping process to estimate tumor metrics.
-* Example output is in folder Data/Chromatin_58Q
-* 
-* 
+## Triple_Knockout 
+* Codes for analyzing Cas12a Ultra-seq data for the triple tumor suppressor knockout experiment.
+
+## Figure_Plot
+* Codes for generating all the figures related Cas12a Ultra-seq experiment.
 
