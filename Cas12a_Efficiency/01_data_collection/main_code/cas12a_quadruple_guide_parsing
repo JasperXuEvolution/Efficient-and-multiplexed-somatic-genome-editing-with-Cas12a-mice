@@ -1,0 +1,227 @@
+#!/usr/bin/env python
+# coding: utf-8
+# Function
+import gzip
+import regex
+import argparse
+import sys
+import os
+import logging
+import pandas as pd
+
+logging.basicConfig(level=logging.INFO)
+
+def find_reverse_complementary(input_string):
+    temp_dic = {'A': 'T', 'G': 'C', 'T': 'A', 'C': 'G', 'N': 'N',
+                'a': 't', 'g': 'c', 't': 'a', 'c': 'g', 'n': 'n'}
+    return ''.join([temp_dic.get(x, 'N') for x in input_string[::-1]])
+
+def merge_sequences(seq1, seq2, target_length=23):
+    """
+    Merge two sequences by finding the maximum overlap between the end of seq1 and the start of seq2.
+    Adjusts the merged sequence to match the target length by trimming or padding with 'N' if necessary.
+
+    Args:
+        seq1 (str): The first sequence.
+        seq2 (str): The second sequence.
+        target_length (int): Target length for the merged sequence.
+
+    Returns:
+        str: The merged sequence.
+    """
+
+    def merge_sequences_lowlevel(seq1, seq2):
+        """
+        Perform a low-level merge of two sequences by finding the maximum overlap.
+
+        Args:
+            seq1 (str): The first sequence.
+            seq2 (str): The second sequence.
+
+        Returns:
+            str: The merged sequence.
+        """
+
+        def find_max_overlap(s1, s2):
+            """
+            Find the maximum overlap between the end of s1 and the start of s2.
+
+            Args:
+                s1 (str): First sequence.
+                s2 (str): Second sequence.
+
+            Returns:
+                int: The length of the maximum overlap.
+            """
+            max_overlap = 0
+            for i in range(1, len(s1) + 1):
+                if s1[-i:] == s2[:i]:
+                    max_overlap = i
+            return max_overlap
+
+        # Find the maximum overlap
+        overlap = find_max_overlap(seq1, seq2)
+
+        # Merge sequences using the overlap
+        merged_option1 = seq1 + seq2[overlap:]
+
+        # Handle case where seq1 is fully contained within seq2
+        if seq1 in seq2:
+            merged_option2 = seq2
+            if len(merged_option2) == target_length and len(merged_option1) != target_length:
+                return merged_option2
+            return merged_option1
+
+        return merged_option1
+
+    # Initial merge
+    merged = merge_sequences_lowlevel(seq1, seq2)
+    temp_storage = merged
+
+    # Adjust to match target length
+    if len(merged) != target_length:
+        # Trim seq1 and re-merge if necessary
+        trimmed_seq1 = seq1[:-1]
+        merged = merge_sequences_lowlevel(trimmed_seq1, seq2)
+
+    if len(merged) != target_length:
+        # Trim seq2 and re-merge if necessary
+        trimmed_seq2 = seq2[1:]
+        merged = merge_sequences_lowlevel(seq1, trimmed_seq2)
+        
+    if len(merged)!= target_length:
+        merged = temp_storage
+        
+    # Final adjustment: Trim or pad to target length
+    if len(merged) > target_length:
+        print(f"Merged sequence longer than expected: {seq1}, {seq2}")
+        return f"{seq1}X{seq2}"
+    elif len(merged) < target_length:
+        print(f"Merged sequence shorter than expected: {seq1}, {seq2}")
+        return f"{seq1}X{seq2}"
+
+    return merged
+
+
+def validate_reference_file(ref_sgRNA_df):
+    required_columns = ['DR1', 'DR2', 'DR3', 'DR4', 'DR6', 
+                        'Guide1_sequence', 'Guide2_sequence', 'Guide3_sequence', 'Guide4_sequence']
+    if not all(col in ref_sgRNA_df.columns for col in required_columns):
+        sys.exit("Error: Reference file is missing required columns.")
+
+def main():
+    parser = argparse.ArgumentParser(description='Extract gRNA and clonal barcode from merged fastq gz file')
+    parser.add_argument("--a1", required=True, help="Input fastq gz file r1")
+    parser.add_argument("--a2", required=True, help="Input fastq gz file r2")
+    parser.add_argument("--b", required=True, help="Reference sgRNA file")
+    parser.add_argument("--o", required=True, help="Output directory")
+    args = parser.parse_args()
+    
+    fastqgz_input_address1 = args.a1
+    fastqgz_input_address2 = args.a2
+    ref_address = args.b
+    output_dir = args.o
+
+    if not os.path.exists(fastqgz_input_address1):
+        sys.exit(f"Error: File not found: {fastqgz_input_address1}")
+    if not os.path.exists(fastqgz_input_address2):
+        sys.exit(f"Error: File not found: {fastqgz_input_address2}")
+    if not os.path.exists(ref_address):
+        sys.exit(f"Error: File not found: {ref_address}")
+    
+    os.makedirs(output_dir, exist_ok=True)
+
+    ref_sgRNA_df = pd.read_csv(ref_address)
+    validate_reference_file(ref_sgRNA_df)
+
+    DR1 = ref_sgRNA_df.DR1.unique()[0] if len(ref_sgRNA_df.DR1.unique()) == 1 else sys.exit("Error: More than one DR1 pattern")
+    DR2 = ref_sgRNA_df.DR2.unique()[0] if len(ref_sgRNA_df.DR2.unique()) == 1 else sys.exit("Error: More than one DR2 pattern")
+    DR3 = ref_sgRNA_df.DR3.unique()[0] if len(ref_sgRNA_df.DR3.unique()) == 1 else sys.exit("Error: More than one DR3 pattern")
+    DR4 = ref_sgRNA_df.DR4.unique()[0] if len(ref_sgRNA_df.DR4.unique()) == 1 else sys.exit("Error: More than one DR4 pattern")
+    DR6 = ref_sgRNA_df.DR6.unique()[0] if len(ref_sgRNA_df.DR6.unique()) == 1 else sys.exit("Error: More than one DR6 pattern")
+
+    temp_pattern1 = regex.compile(f'TAGTT(.{{16}})TATGG{DR1}(.{{23}}){DR2}(.+)')
+    temp_pattern2 = regex.compile(f'(.{{1,23}}){DR3}(.{{23}}){DR4}(.{{23}}){DR6}')
+
+    temp_total_read, temp_extracted_read, temp_matched_read = 0, 0, 0
+    temp_sample_ID = output_dir.split('/')[-1]
+
+    temp_gRNA1_list, temp_gRNA2_list, temp_gRNA3_list, temp_gRNA4_list = [], [], [], []
+    temp_read_ID_list, temp_Clonal_barcode_list, temp_label_list = [], [], []
+
+    with gzip.open(fastqgz_input_address1, 'rt') as handler1, gzip.open(fastqgz_input_address2, 'rt') as handler2:
+        while True:
+            temp_readID = handler1.readline().rstrip()
+            handler2.readline()
+            temp_sequence1 = handler1.readline().rstrip()
+            temp_sequence2 = find_reverse_complementary(handler2.readline().rstrip())
+            handler1.readline()
+            handler1.readline()
+            handler2.readline()
+            handler2.readline()
+
+            if not temp_readID:
+                break
+
+            temp_total_read += 1
+            temp_search_result1 = temp_pattern1.search(temp_sequence1)
+            temp_search_result2 = temp_pattern2.search(temp_sequence2)
+
+            if not temp_search_result1 or not temp_search_result2:
+                # logging.warning(f"No match for sequences: {temp_sequence1}, {temp_sequence2}")
+                continue
+
+            temp_extracted_read += 1
+            temp_clonal_barcode = temp_search_result1.group(1)
+            temp_gRNA1 = temp_search_result1.group(2)
+            temp_gRNA_p1 = temp_search_result1.group(3)
+            temp_gRNA_p2 = temp_search_result2.group(1)
+            temp_gRNA3 = temp_search_result2.group(2)
+            temp_gRNA4 = temp_search_result2.group(3)
+            temp_gRNA2 = merge_sequences(temp_gRNA_p1, temp_gRNA_p2)
+
+            temp_gRNA1_list.append(temp_gRNA1)
+            temp_gRNA2_list.append(temp_gRNA2)
+            temp_gRNA3_list.append(temp_gRNA3)
+            temp_gRNA4_list.append(temp_gRNA4)
+            temp_read_ID_list.append(temp_readID)
+            temp_Clonal_barcode_list.append(temp_clonal_barcode)
+
+            if (temp_gRNA1 in ref_sgRNA_df.Guide1_sequence.values and
+                temp_gRNA2 in ref_sgRNA_df.Guide2_sequence.values and
+                temp_gRNA3 in ref_sgRNA_df.Guide3_sequence.values and
+                temp_gRNA4 in ref_sgRNA_df.Guide4_sequence.values):
+                temp_matched_read += 1
+                temp_label_list.append('Expected')
+            else:
+                temp_label_list.append('Unexpected')
+
+    logging.info(f"Sample {temp_sample_ID} has {temp_total_read} reads. "
+                 f"{temp_extracted_read} with barcode/sgRNA ({temp_extracted_read/temp_total_read:.3f}). "
+                 f"{temp_matched_read} expected sgRNA ({temp_matched_read/temp_total_read:.3f}).")
+
+    Final_df = pd.DataFrame({
+        'gRNA1': temp_gRNA1_list, 'gRNA2': temp_gRNA2_list, 
+        'gRNA3': temp_gRNA3_list, 'gRNA4': temp_gRNA4_list,
+        'Clonal_barcode': temp_Clonal_barcode_list, 'Read_ID': temp_read_ID_list,
+        'Sample_ID': temp_sample_ID, 'Class': temp_label_list
+    })
+    Final_df['gRNA_combination'] = Final_df['gRNA1'] + '_' + Final_df['gRNA2'] + '_' + Final_df['gRNA3'] + '_' + Final_df['gRNA4']
+
+    Final_df_S = Final_df.groupby([col for col in Final_df.columns if col != 'Read_ID']).size().reset_index(name='Count')
+    Final_df.to_csv(f"{output_dir}/Intermediate_df.csv", index=False)
+    Final_df_S.to_csv(f"{output_dir}/Combined_deduplexed_df_full.csv", index=False)
+
+    Final_filtered_df = Final_df[Final_df.gRNA_combination.isin(ref_sgRNA_df.gRNA_combination)] # I only take those array exist.
+    sgRNA_groups = Final_filtered_df.groupby("gRNA_combination")
+    temp_address_file = output_dir+'/Bartender_input_address'
+    file_a = open(temp_address_file, 'w')
+    for groups in sgRNA_groups:
+        g, value = groups
+        temp_name = output_dir + '/Clonal_barcode/' + g + '.bartender'
+        file_a.write(temp_name + '\n')
+        value[['Clonal_barcode', 'Read_ID']].to_csv(temp_name, sep=',', header=False, index=False)
+    file_a.close()
+
+if __name__ == "__main__":
+    main()
