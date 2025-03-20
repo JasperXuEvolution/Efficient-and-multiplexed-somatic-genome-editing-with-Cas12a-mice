@@ -7,15 +7,12 @@ Somatic genome editing in mouse models has increased our understanding of the in
 ## Contact
 If you have any questions or comments, you could reach me at xhq@stanford.edu.
 
-## Cancer model
-* Codes for analyzing Ultra-seq data for Oncogene negative tumor, PDAC and SCLC:
-** D
-* The pipe line is in Ultra_seq_pipeline.sh
-* Barcodes refer to both sgRNA sequence and clonal barcode
-* Ultra_seq_pipeline.sh contains the necessary steps for barcode extraction
-* The output of this steps is a master table contains the sgRNA, colonal barcode, sample ID and reads count information.
+## 01_Cancer model
+* Codes for analyzing Ultra-seq data for Oncogene negative tumor, PDAC and SCLC
+* PE150 folder contains codes necessary for PE150 data (using SCLC as an example)
+* PE300 folder contains codes necessary for PE150 data
 
-## 2. QC and preprocessing
+## 02_
 * Refer to the folder S2_QC_and_Preprocessing
 * Map clustered sgRNA to the reference.
 * Filter out barcode that does not match the clonal barcode pattern
