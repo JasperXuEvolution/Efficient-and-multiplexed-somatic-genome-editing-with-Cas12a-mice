@@ -8,13 +8,13 @@
 # SBATCH directives: Job submission options for the SLURM scheduler.
 # ---------------------------------------------------------------------
 #SBATCH --job-name=UltraSeq_pipeline_cas12a_triple_guide
-#SBATCH --mail-user=xhq@stanford.edu
+#SBATCH --mail-user=xxx
 #SBATCH --cpus-per-task=1
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --mem-per-cpu=100g 
 #SBATCH --time=24:00:00
-#SBATCH --account=mwinslow
+#SBATCH --account=xxx
 #SBATCH --partition=batch
 
 # ---------------------------------------------------------------------
