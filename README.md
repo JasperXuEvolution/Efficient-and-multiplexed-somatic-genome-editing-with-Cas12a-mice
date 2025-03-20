@@ -1,5 +1,5 @@
 # Efficient and multiplexed somatic genome editing with Cas12a mice
-This repository contains data analysis scripts for the study "Efficient and Multiplexed Somatic Genome Editing with Cas12a Mice."
+This repository contains data analysis scripts for the study "Efficient and Multiplexed Somatic Genome Editing with Cas12a Mice".
 
 ## Contact
 For questions or comments, please reach out to xhq@stanford.edu.
