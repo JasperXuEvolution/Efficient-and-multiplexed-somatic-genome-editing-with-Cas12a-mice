@@ -7,8 +7,9 @@ Somatic genome editing in mouse models has increased our understanding of the in
 ## Contact
 If you have any questions or comments, you could reach me at xhq@stanford.edu.
 
-## 1. Barcode extraction
-* Refer to the folder S1_Extracting_barcodes
+## Cancer model
+* Codes for analyzing Ultra-seq data for Oncogene negative tumor, PDAC and SCLC:
+** D
 * The pipe line is in Ultra_seq_pipeline.sh
 * Barcodes refer to both sgRNA sequence and clonal barcode
 * Ultra_seq_pipeline.sh contains the necessary steps for barcode extraction
