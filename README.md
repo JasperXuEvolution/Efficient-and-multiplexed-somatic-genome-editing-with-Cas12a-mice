@@ -7,7 +7,9 @@ Somatic genome editing in mouse models has increased our understanding of the in
 ## Contact
 For questions or comments, please reach out to xhq@stanford.edu.
 
-## Cancer model
+## File manifest
+
+* Cancer model
 - Scripts for analyzing Cas12a Ultra-seq data in three different tumor models:
   - Oncogene-negative tumors
   - Pancreatic ductal adenocarcinoma (PDAC)
