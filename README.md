@@ -8,7 +8,7 @@ Somatic genome editing in mouse models has increased our understanding of the in
 For questions or comments, please reach out to xhq@stanford.edu.
 
 ## Cancer model
-- Contains scripts for analyzing Cas12a Ultra-seq data in three different tumor models:
+- Scripts for analyzing Cas12a Ultra-seq data in three different tumor models:
   - Oncogene-negative tumors
   - Pancreatic ductal adenocarcinoma (PDAC)
   - Small cell lung cancer (SCLC)
@@ -17,10 +17,10 @@ For questions or comments, please reach out to xhq@stanford.edu.
 - PE300 folder: Scripts for PE300 sequencing data.
 
 ## Cas12a_Efficiency 
-- Includes scripts for analyzing Cas12a Ultra-seq data from efficiency experiments.
+- Scripts for analyzing Cas12a Ultra-seq data from efficiency experiments.
 
 ## Triple_Knockout 
-- Includes scripts for analyzing Cas12a Ultra-seq data from the triple tumor suppressor knockout experiment.
+- Scripts for analyzing Cas12a Ultra-seq data from the triple tumor suppressor knockout experiment.
 
 ## Figure_Plot
 - Scripts for generating all Cas12a Ultra-seq experiment-related figures.
