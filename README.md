@@ -9,6 +9,7 @@ For questions or comments, please reach out to xhq@stanford.edu.
 
 ## Cancer model
 * Contains scripts for analyzing Cas12a Ultra-seq data in three different tumor models:
+- **Oncogene-negative tumors**
 *   *Oncogene-negative tumors
 * PE150 folder contains codes necessary for PE150 data (using SCLC as an example)
 * PE300 folder contains codes necessary for PE300 data
