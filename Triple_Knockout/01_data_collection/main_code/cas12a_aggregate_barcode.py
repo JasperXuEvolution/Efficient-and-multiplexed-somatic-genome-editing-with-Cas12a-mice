@@ -105,18 +105,25 @@ def Combine_sgRNA_barcode_from_the_Same_mouse(input_folder_address):
     temp_final = temp_total_bc_df.merge(temp_sgRNA_ref_df, on=['Read_ID', 'Clonal_barcode'], how='left')
     
     # Group by key columns to obtain a detailed merged output.
-    temp_name_list = ['gRNA_combination', 'Clonal_barcode_center',
-                      'gRNA1', 'gRNA2', 'gRNA3', 'Clonal_barcode', 'Sample_ID']
-    temp_final_raw = temp_final.groupby(temp_name_list, as_index=False)['Read_ID'].count()
-    temp_final_raw.rename(columns={'Read_ID': 'Count'}, inplace=True)
-    
-    # Group to generate the deduplicated summary (perfect matches as pre-filtered for Cas12a).
-    temp_final_true_sgRNA = temp_final
-    temp_final_completely_deduplexed = temp_final_true_sgRNA.groupby(
-        ['gRNA_combination', 'Clonal_barcode_center', 'gRNA1', 'gRNA2', 'gRNA3', 'Sample_ID'],
-        as_index=False)['Read_ID'].count()
-    temp_final_completely_deduplexed.rename(columns={'Read_ID': 'Count',
-                                                       'Clonal_barcode_center': 'Clonal_barcode'}, inplace=True)
+    # Dynamically detect all columns that start with 'gRNA' and use them for grouping.
+    static_cols = ['Clonal_barcode_center', 'Clonal_barcode', 'Sample_ID']
+    # Dynamically find columns starting with 'gRNA'
+    grna_cols = [col for col in temp_final.columns if col.startswith('gRNA')]
+    # Combine static and dynamic column names for grouping without specific order
+    final_group_cols = static_cols + grna_cols
+    # Perform the groupby operation dynamically
+    temp_final_raw = temp_final.groupby(final_group_cols, as_index=False)['Read_ID'].count()
+    temp_final_raw.rename(columns={'Read_ID':'Count'}, inplace=True)
+    temp_final_true_sgRNA = temp_final # I only keep those perfect match, which I already did for cas12a
+    # Additional step: Completely deduplexed dataframe using dynamic grouping
+    final_group_cols_deduplexed = ['Clonal_barcode_center', 'Sample_ID'] + grna_cols
+    temp_final_completely_deduplexed = temp_final_true_sgRNA.groupby(final_group_cols_deduplexed, as_index=False)['Read_ID'].count()
+    temp_final_completely_deduplexed.rename(columns={'Read_ID':'Count',
+                                                    'Clonal_barcode_center':'Clonal_barcode'}, inplace=True)
+
+
+
+
     return (temp_final_raw, temp_final_completely_deduplexed)
 
 def merge_barcode_and_sgRNA_output(input_barcode_address, input_cluster_address, bartender_input):
