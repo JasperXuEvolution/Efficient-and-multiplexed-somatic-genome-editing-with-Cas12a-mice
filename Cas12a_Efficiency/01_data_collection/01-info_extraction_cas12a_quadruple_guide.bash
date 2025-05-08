@@ -1,8 +1,16 @@
 #!/bin/bash
+# 01-info_extraction_cas12a_quadruple_guide.bash
+# This shell script is part of the UltraSeq pipeline for processing Cas12a quadruple guide data.
+# It performs sequence merging, gRNA/barcode extraction, clustering, and data aggregation.
+# Additionally, it cleans up intermediate files and outputs a summary log for quality control.
+
+# ---------------------------------------------------------------------
+# SBATCH directives: Job submission options for the SLURM scheduler.
+# ---------------------------------------------------------------------
 # The interpreter used to execute the script
 
 # SBATCH directives that convey submission options:
-#SBATCH --job-name=02-info_extraction_cas12a_quadruple_guide
+#SBATCH --job-name=01-info_extraction_cas12a_quadruple_guide
 #SBATCH --mail-user=xxx
 #SBATCH --cpus-per-task=1
 #SBATCH --nodes=1
@@ -12,12 +20,18 @@
 #SBATCH --account=xxx
 #SBATCH --partition=batch
 
+# ---------------------------------------------------------------------
+# Environment Setup: Load configuration, modules, and activate Conda environment.
+# ---------------------------------------------------------------------
 # Load required modules and activate the environment
 source ../config.sh
 module load adapterremoval/2.3.1
 source ~/miniconda3/etc/profile.d/conda.sh
 conda activate UltraSeq || { echo "Error: Failed to activate Conda environment"; exit 1; }
 
+# ---------------------------------------------------------------------
+# Directories and Input Files Setup
+# ---------------------------------------------------------------------
 # Define directories and input paths
 working_dir="$PROJECT_DIR/01_data_collection"
 Python_script_address="${working_dir}/main_code"
@@ -36,7 +50,9 @@ fi
 mkdir -p "${Step1_address}" || { echo "Error: Failed to create directory ${Step1_address}"; exit 1; }
 mkdir -p "${Step3_address}" || { echo "Error: Failed to create directory ${Step3_address}"; exit 1; }
 
-
+# ---------------------------------------------------------------------
+# Main Pipeline: Process each sample listed in the input data info file.
+# ---------------------------------------------------------------------
 while read -r line; do
     r1=$(echo "$line" | cut -d',' -f1)
     r2=$(echo "$line" | cut -d',' -f2)
@@ -86,6 +102,9 @@ while read -r line; do
     rm -rf "${clonal_barcode_folder}" || { echo "Error: Failed to clean up ${clonal_barcode_folder}"; exit 1; }
 done < "${Input_data_info_address}"
 
+# ---------------------------------------------------------------------
+# Final Steps: Combine and Process All Data Across Samples
+# ---------------------------------------------------------------------
 # Step 3: Combine all data
 python3 "${Python_script_address}/cas12a_aggregate_sample.py" --o "${Step3_address}/" || {
     echo "Error: Step 3 failed"; exit 1;
@@ -97,6 +116,9 @@ python3 "${Python_script_address}/cas12a_aggregate_sample_for_QC.py" \
     echo "Error: Step 4 failed"; exit 1;
 }
 
+# ---------------------------------------------------------------------
+# Job Summary: Display SLURM job statistics.
+# ---------------------------------------------------------------------
 # Output job statistics
 sacct --format=JobID,JobName,Submit,Start,End,State,Partition,ReqTRES%30,CPUTime,MaxRSS,NodeList%30 \
     --units=M -j "${SLURM_JOBID}"
