@@ -1,5 +1,5 @@
 #!/bin/bash
-# 02-info_extraction_cas12a_triple_guide.bash
+# 01-info_extraction_cas12a_triple_guide.bash
 # This shell script is part of the UltraSeq pipeline for processing Cas12a triple guide data.
 # It performs sequence merging, gRNA/barcode extraction, clustering, and data aggregation.
 # Additionally, it cleans up intermediate files and outputs a summary log for quality control.
